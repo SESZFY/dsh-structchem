@@ -1,4 +1,4 @@
-﻿# dsh-structchem
+# dsh-structchem
 
 结构化学答题的**确定性工具层 + 作答规范层**。面向周公度·段连运《结构化学基础》（第 5 版）体系
 
@@ -31,7 +31,44 @@
 
 ---
 
-## 装什么
+## 安装
+
+DSH 安装插件的本质是「往 profile 的依赖里加这个包，再让它作为 bundle 层装载」。
+两条路，任选。
+
+**A. 图形界面（最省事）**
+
+桌面端「设置 → 插件」里填这个 spec：
+
+```
+github:SESZFY/dsh-structchem
+```
+
+**B. 命令行 / 直接改依赖**
+
+```powershell
+dsh plugin --profile desktop add github:SESZFY/dsh-structchem
+```
+
+等价于在 profile 的 `package.json`（`~/.dsh/profiles/desktop/package.json`）里加一行：
+
+```json
+"dependencies": {
+  "dsh-structchem": "github:SESZFY/dsh-structchem"
+}
+```
+
+然后在该 profile 目录 `pnpm install`。装完**重启 DSH** —— MCP 进程在启动时拉起，
+`dsh-mcp-client` 没有热重载，换了代码不重启跑的还是旧版本。
+
+**没有 git 的机器**：pnpm 解析 `github:` 依赖要调用 `git`（会转成 codeload 的 tarball，
+但仍需 git 做 `ls-remote`）。没装 git 就把依赖换成 tarball URL：
+
+```
+https://codeload.github.com/SESZFY/dsh-structchem/tar.gz/refs/heads/main
+```
+
+### 先装 Python 依赖
 
 ```bash
 pip install -r requirements.txt      # numpy + mcp(1.x)，就这两个
@@ -39,7 +76,26 @@ pip install -r requirements.txt      # numpy + mcp(1.x)，就这两个
 
 纯本地 numpy 计算，**零网络、零 API key**、无 RDKit 之类重依赖。
 
-作为 DSH profile bundle 安装后，`cordis.patch.yml` 会自动做两件事：
+### 装完怎么验
+
+让 agent 判一个点群（水分子应得 `C2v`、氨应得 `C3v`），或在任意会话里直接调用：
+
+```
+mcp__structchem__sc_point_group(
+  atoms=[{"sym":"O","xyz":[0,0,0]},
+         {"sym":"H","xyz":[75.7,0,0]},
+         {"sym":"H","xyz":[-24.0,71.7,0]}])
+```
+
+返回 `point_group: "C2v"`、`order: 4` 就说明 MCP 起来了。工具与模块健康状态用
+`mcp__structchem__sc_toolbox()` 自查。
+
+> 计算工具**都不带 `impl` 参数**。如果你在 tools/list 里看到 `required: ["impl", ...]`，
+> 说明 MCP 子进程仍在跑旧代码 —— 重启 DSH 即可，不必去改配置。
+
+### bundle 层做了什么
+
+`cordis.patch.yml` 会自动做两件事：
 
 1. 把随包的 `skills/` 注册成独立技能扫描源（providerName `structchem`）；
 2. 把 `src/` 里的 stdio MCP 服务挂进 MCP 客户端，模型侧出现 `mcp__structchem__sc_*` 工具。
