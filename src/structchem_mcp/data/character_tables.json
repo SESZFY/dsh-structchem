@@ -1,0 +1,943 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "source": "《结构化学基础》(周公度·段连运, 第5版) 第4章附表 / Cotton《Chemical Applications of Group Theory》附录口径",
+    "conventions": {
+      "class_order": "按教材附表的类顺序排列；reduce_representation 的 chars 必须按此顺序给。",
+      "axis": "z 轴取主轴（C_n 轴）；D_nh 中 C2' 轴取与原子共线者，σv 含 C2' 轴，σd 平分 C2' 轴。",
+      "cyclic_merge": "C_n(n>=3)、C_nh(n为奇数)、S_2n、T、Th 中，教材把一对共轭一维复表示合并写成一个 E 表示（特征标 2cos）。这类表示在 irreps 里带 \"merged\": true，约化时按 n=(1/(2h))Σ g_c·χ_i·χ_r 计算，本书把它记为『教材合并约定』。",
+      "infinite": "C∞v / D∞h 用简化表（类为 E, 2C_φ, ∞σv[, i, 2S_φ, 2C2]），非整数字符写成 \"2cos(φ)\" 形式的字符串；这类群的约化需按 Σ/Π 计数，工具里由 normal_modes 的线形分支处理。"
+    },
+    "class_irrep_theorem": "完整（未合并）特征标表里不可约表示数 = 类数；但本表按教材把一对共轭一维复表示并写成一个 E（merged），此时表示数 < 类数是正常的。合并约定下唯一成立的判据是三条：① 全对称表示各字符为 1 且 Σ_c g_c·χ_全对称 = h；② 任意两个不同表示 Σ_c g_c·χ_i·χ_j = 0；③ 自身归一：非 merged 表示 Σ_c g_c·χ_i² = h，merged 表示 = 2h。",
+    "known_fixes": [
+      {"group": "Oh", "field": "irreps.A2g / A2u @ 8S6",
+       "wrong": "A2g 在 8S6 记为 −1、A2u 记为 +1",
+       "right": "A2g 在 8S6 = +1，A2u 在 8S6 = −1",
+       "why": "(S6)³ = i，故一维表示有 χ(S6)³ = χ(i)：g 表示 χ(i)=+1 ⇒ χ(S6)=+1；u 表示 ⇒ χ(S6)=−1。原写法让 <A1g|A2g> = −16。",
+       "found_by": "lead 用 Σ_c g_c·χ_i·χ_j = h·δ_ij 全表扫出"},
+      {"group": "Ih", "field": "irreps.T1g/T2g/T1u/T2u @ 15σ",
+       "wrong": "四个 T 表示在 15σ 上符号相反",
+       "right": "T1g/T2g 的 15σ = −1，T1u/T2u 的 15σ = +1",
+       "why": "Ih = I × Ci（i 在中心），g 表示在非真操作上的特征标 = +χ_I(对应真操作)、u 表示取负；15σ ↔ χ_I(15C2) = −1。偏差 ±30 = 15×2 正好指向这一个类。",
+       "found_by": "lead 扫出，symmetry-dev 用直积因子化复核"},
+      {"group": "D3d", "field": "basis.Eu",
+       "wrong": "Eu 装了 (x²-y², xy)",
+       "right": "Eu 只装 (x,y)；(x²-y²,xy) 归 Eg",
+       "why": "二次齐次多项式是**偶**函数（对 i 不变），不可能落在 u（反对称）表示里；二次函数只能进 g 表示。",
+       "found_by": "symmetry-dev 的基函数一致性自校验（用真实群元算 Γ_quad 再约化）"},
+      {"group": "D4d", "field": "basis.B1 / basis.E2",
+       "wrong": "B1 装了 x²-y²；E2 空着",
+       "right": "B1 无二次函数（留空）；x²-y² 与 xy 一起归 E2",
+       "why": "x²-y² 与 xy 在 D4d 里同属 E2（一个二维不可约表示的基）；B1 是一维且无二次基。抄表时最容易把 x²-y² 挂到 B1 上。",
+       "found_by": "同上"},
+      {"group": "S6", "field": "basis.Ag / basis.Eg / basis.Eu",
+       "wrong": "Ag 缺 Rz；Eg 缺 (x²-y²,xy)，而 (x²-y²,xy) 误放 Eu",
+       "right": "Ag: Rz, x²+y², z²；Eg: (Rx,Ry), (xz,yz), (x²-y²,xy)；Eu: (x,y)",
+       "why": "主轴是**映轴**时 Rz 对 C3 不变、对 i 也不变（赝矢量的 i 特征标为 +1），故 Rz 属 Ag 而非 Eg。原写法让 Γ_rot 少一个 Ag，normal_modes('S6', n) 的 Γ_vib 会算错。",
+       "found_by": "同上"},
+      {"group": "T / Th", "field": "basis.E / basis.Eg",
+       "wrong": "T 的 E、Th 的 Eg 空着不给基函数",
+       "right": "填 (2z²-x²-y², x²-y²)",
+       "why": "6 个二次函数在 T 里分解为 A + E + T（1+2+3 = 6）；E 空着会让 Γ_quad 少两个维度，查基函数时漏掉 E。",
+       "found_by": "同上"}
+    ]
+  },
+
+  "C1": {
+    "order": 1,
+    "classes": [{"label": "E", "size": 1, "ops": ["E"]}],
+    "irreps": [{"name": "A", "chars": [1]}],
+    "basis": {"A": ["x", "y", "z", "Rx", "Ry", "Rz", "x²", "y²", "z²", "xy", "yz", "xz"]}
+  },
+
+  "Cs": {
+    "order": 2,
+    "classes": [{"label": "E", "size": 1, "ops": ["E"]}, {"label": "σh", "size": 1, "ops": ["σ(xz)"]}],
+    "irreps": [
+      {"name": "A'", "chars": [1, 1]},
+      {"name": "A''", "chars": [1, -1]}
+    ],
+    "basis": {
+      "A'": ["x", "y", "Rz", "x²", "y²", "z²", "xy"],
+      "A''": ["z", "Rx", "Ry", "yz", "xz"]
+    },
+    "note": "镜面取 xz 面；A' 对镜面对称。"
+  },
+
+  "Ci": {
+    "order": 2,
+    "classes": [{"label": "E", "size": 1, "ops": ["E"]}, {"label": "i", "size": 1, "ops": ["i"]}],
+    "irreps": [
+      {"name": "Ag", "chars": [1, 1]},
+      {"name": "Au", "chars": [1, -1]}
+    ],
+    "basis": {
+      "Ag": ["Rx", "Ry", "Rz", "x²", "y²", "z²", "xy", "yz", "xz"],
+      "Au": ["x", "y", "z"]
+    }
+  },
+
+  "C2": {
+    "order": 2,
+    "classes": [{"label": "E", "size": 1, "ops": ["E"]}, {"label": "C2", "size": 1, "ops": ["C2(z)"]}],
+    "irreps": [
+      {"name": "A", "chars": [1, 1]},
+      {"name": "B", "chars": [1, -1]}
+    ],
+    "basis": {
+      "A": ["z", "Rz", "x²", "y²", "z²", "xy"],
+      "B": ["x", "y", "Rx", "Ry", "yz", "xz"]
+    }
+  },
+
+  "C3": {
+    "order": 3,
+    "classes": [{"label": "E", "size": 1}, {"label": "2C3", "size": 2}],
+    "irreps": [
+      {"name": "A", "chars": [1, 1]},
+      {"name": "E", "chars": [2, -1], "merged": true}
+    ],
+    "basis": {
+      "A": ["z", "Rz", "x²+y²", "z²"],
+      "E": ["(x,y)", "(Rx,Ry)", "(x²-y²,xy)", "(xz,yz)"]
+    }
+  },
+
+  "C4": {
+    "order": 4,
+    "classes": [{"label": "E", "size": 1}, {"label": "2C4", "size": 2}, {"label": "C2", "size": 1}],
+    "irreps": [
+      {"name": "A", "chars": [1, 1, 1]},
+      {"name": "B", "chars": [1, -1, 1]},
+      {"name": "E", "chars": [2, 0, -2], "merged": true}
+    ],
+    "basis": {
+      "A": ["z", "Rz", "x²+y²", "z²"],
+      "B": ["x²-y²", "xy"],
+      "E": ["(x,y)", "(Rx,Ry)", "(xz,yz)"]
+    }
+  },
+
+  "C5": {
+    "order": 5,
+    "classes": [{"label": "E", "size": 1}, {"label": "2C5", "size": 2}, {"label": "2C5²", "size": 2}],
+    "irreps": [
+      {"name": "A", "chars": [1, 1, 1]},
+      {"name": "E1", "chars": [2, 0.618034, -1.618034], "merged": true},
+      {"name": "E2", "chars": [2, -1.618034, 0.618034], "merged": true}
+    ],
+    "basis": {
+      "A": ["z", "Rz", "x²+y²", "z²"],
+      "E1": ["(x,y)", "(Rx,Ry)", "(xz,yz)"],
+      "E2": ["(x²-y²,xy)"]
+    }
+  },
+
+  "C6": {
+    "order": 6,
+    "classes": [{"label": "E", "size": 1}, {"label": "2C6", "size": 2}, {"label": "2C3", "size": 2}, {"label": "C2", "size": 1}],
+    "irreps": [
+      {"name": "A", "chars": [1, 1, 1, 1]},
+      {"name": "B", "chars": [1, -1, 1, -1]},
+      {"name": "E1", "chars": [2, 1, -1, -2], "merged": true},
+      {"name": "E2", "chars": [2, -1, -1, 2], "merged": true}
+    ],
+    "basis": {
+      "A": ["z", "Rz", "x²+y²", "z²"],
+      "B": [],
+      "E1": ["(x,y)", "(Rx,Ry)", "(xz,yz)"],
+      "E2": ["(x²-y²,xy)"]
+    }
+  },
+
+  "C2v": {
+    "order": 4,
+    "classes": [
+      {"label": "E", "size": 1, "ops": ["E"]},
+      {"label": "C2", "size": 1, "ops": ["C2(z)"]},
+      {"label": "σv(xz)", "size": 1, "ops": ["σ(xz)"]},
+      {"label": "σv'(yz)", "size": 1, "ops": ["σ(yz)"]}
+    ],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, -1, -1]},
+      {"name": "B1", "chars": [1, -1, 1, -1]},
+      {"name": "B2", "chars": [1, -1, -1, 1]}
+    ],
+    "basis": {
+      "A1": ["z", "x²", "y²", "z²"],
+      "A2": ["Rz", "xy"],
+      "B1": ["x", "Ry", "xz"],
+      "B2": ["y", "Rx", "yz"]
+    }
+  },
+
+  "C3v": {
+    "order": 6,
+    "classes": [{"label": "E", "size": 1}, {"label": "2C3", "size": 2}, {"label": "3σv", "size": 3}],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, -1]},
+      {"name": "E", "chars": [2, -1, 0]}
+    ],
+    "basis": {
+      "A1": ["z", "x²+y²", "z²"],
+      "A2": ["Rz"],
+      "E": ["(x,y)", "(Rx,Ry)", "(x²-y²,xy)", "(xz,yz)"]
+    }
+  },
+
+  "C4v": {
+    "order": 8,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C4", "size": 2}, {"label": "C2", "size": 1},
+      {"label": "2σv", "size": 2}, {"label": "2σd", "size": 2}
+    ],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, 1, -1, -1]},
+      {"name": "B1", "chars": [1, -1, 1, 1, -1]},
+      {"name": "B2", "chars": [1, -1, 1, -1, 1]},
+      {"name": "E", "chars": [2, 0, -2, 0, 0]}
+    ],
+    "basis": {
+      "A1": ["z", "x²+y²", "z²"],
+      "A2": ["Rz"],
+      "B1": ["x²-y²"],
+      "B2": ["xy"],
+      "E": ["(x,y)", "(Rx,Ry)", "(xz,yz)"]
+    }
+  },
+
+  "C5v": {
+    "order": 10,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C5", "size": 2}, {"label": "2C5²", "size": 2},
+      {"label": "5σv", "size": 5}
+    ],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, 1, -1]},
+      {"name": "E1", "chars": [2, 0.618034, -1.618034, 0]},
+      {"name": "E2", "chars": [2, -1.618034, 0.618034, 0]}
+    ],
+    "basis": {
+      "A1": ["z", "x²+y²", "z²"],
+      "A2": ["Rz"],
+      "E1": ["(x,y)", "(Rx,Ry)", "(xz,yz)"],
+      "E2": ["(x²-y²,xy)"]
+    }
+  },
+
+  "C6v": {
+    "order": 12,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C6", "size": 2}, {"label": "2C3", "size": 2},
+      {"label": "C2", "size": 1}, {"label": "3σv", "size": 3}, {"label": "3σd", "size": 3}
+    ],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1, 1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, 1, 1, -1, -1]},
+      {"name": "B1", "chars": [1, -1, 1, -1, 1, -1]},
+      {"name": "B2", "chars": [1, -1, 1, -1, -1, 1]},
+      {"name": "E1", "chars": [2, 1, -1, -2, 0, 0]},
+      {"name": "E2", "chars": [2, -1, -1, 2, 0, 0]}
+    ],
+    "basis": {
+      "A1": ["z", "x²+y²", "z²"],
+      "A2": ["Rz"],
+      "B1": [],
+      "B2": [],
+      "E1": ["(x,y)", "(Rx,Ry)", "(xz,yz)"],
+      "E2": ["(x²-y²,xy)"]
+    }
+  },
+
+  "C2h": {
+    "order": 4,
+    "classes": [
+      {"label": "E", "size": 1, "ops": ["E"]}, {"label": "C2", "size": 1, "ops": ["C2(z)"]},
+      {"label": "i", "size": 1, "ops": ["i"]}, {"label": "σh", "size": 1, "ops": ["σ(xy)"]}
+    ],
+    "irreps": [
+      {"name": "Ag", "chars": [1, 1, 1, 1]},
+      {"name": "Bg", "chars": [1, -1, 1, -1]},
+      {"name": "Au", "chars": [1, 1, -1, -1]},
+      {"name": "Bu", "chars": [1, -1, -1, 1]}
+    ],
+    "basis": {
+      "Ag": ["Rz", "x²", "y²", "z²", "xy"],
+      "Bg": ["Rx", "Ry", "xz", "yz"],
+      "Au": ["z"],
+      "Bu": ["x", "y"]
+    }
+  },
+
+  "C3h": {
+    "order": 6,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "C3", "size": 1}, {"label": "C3²", "size": 1},
+      {"label": "σh", "size": 1}, {"label": "S3", "size": 1}, {"label": "S3⁵", "size": 1}
+    ],
+    "irreps": [
+      {"name": "A'", "chars": [1, 1, 1, 1, 1, 1]},
+      {"name": "A''", "chars": [1, 1, 1, -1, -1, -1]},
+      {"name": "E'", "chars": [2, -1, -1, 2, -1, -1], "merged": true},
+      {"name": "E''", "chars": [2, -1, -1, -2, 1, 1], "merged": true}
+    ],
+    "basis": {
+      "A'": ["Rz", "x²+y²", "z²"],
+      "A''": ["z"],
+      "E'": ["(x,y)", "(x²-y²,xy)"],
+      "E''": ["(Rx,Ry)", "(xz,yz)"]
+    }
+  },
+
+  "D2": {
+    "order": 4,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "C2(z)", "size": 1},
+      {"label": "C2(y)", "size": 1}, {"label": "C2(x)", "size": 1}
+    ],
+    "irreps": [
+      {"name": "A", "chars": [1, 1, 1, 1]},
+      {"name": "B1", "chars": [1, 1, -1, -1]},
+      {"name": "B2", "chars": [1, -1, 1, -1]},
+      {"name": "B3", "chars": [1, -1, -1, 1]}
+    ],
+    "basis": {
+      "A": ["x²", "y²", "z²"],
+      "B1": ["z", "Rz", "xy"],
+      "B2": ["y", "Ry", "xz"],
+      "B3": ["x", "Rx", "yz"]
+    }
+  },
+
+  "D3": {
+    "order": 6,
+    "classes": [{"label": "E", "size": 1}, {"label": "2C3", "size": 2}, {"label": "3C2", "size": 3}],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, -1]},
+      {"name": "E", "chars": [2, -1, 0]}
+    ],
+    "basis": {
+      "A1": ["x²+y²", "z²"],
+      "A2": ["z", "Rz"],
+      "E": ["(x,y)", "(Rx,Ry)", "(x²-y²,xy)", "(xz,yz)"]
+    }
+  },
+
+  "D4": {
+    "order": 8,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C4", "size": 2}, {"label": "C2", "size": 1},
+      {"label": "2C2'", "size": 2}, {"label": "2C2''", "size": 2}
+    ],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, 1, -1, -1]},
+      {"name": "B1", "chars": [1, -1, 1, 1, -1]},
+      {"name": "B2", "chars": [1, -1, 1, -1, 1]},
+      {"name": "E", "chars": [2, 0, -2, 0, 0]}
+    ],
+    "basis": {
+      "A1": ["x²+y²", "z²"],
+      "A2": ["z", "Rz"],
+      "B1": ["x²-y²"],
+      "B2": ["xy"],
+      "E": ["(x,y)", "(Rx,Ry)", "(xz,yz)"]
+    }
+  },
+
+  "D5": {
+    "order": 10,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C5", "size": 2}, {"label": "2C5²", "size": 2},
+      {"label": "5C2", "size": 5}
+    ],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, 1, -1]},
+      {"name": "E1", "chars": [2, 0.618034, -1.618034, 0]},
+      {"name": "E2", "chars": [2, -1.618034, 0.618034, 0]}
+    ],
+    "basis": {
+      "A1": ["x²+y²", "z²"],
+      "A2": ["z", "Rz"],
+      "E1": ["(x,y)", "(Rx,Ry)", "(xz,yz)"],
+      "E2": ["(x²-y²,xy)"]
+    }
+  },
+
+  "D6": {
+    "order": 12,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C6", "size": 2}, {"label": "2C3", "size": 2},
+      {"label": "C2", "size": 1}, {"label": "3C2'", "size": 3}, {"label": "3C2''", "size": 3}
+    ],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1, 1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, 1, 1, -1, -1]},
+      {"name": "B1", "chars": [1, -1, 1, -1, 1, -1]},
+      {"name": "B2", "chars": [1, -1, 1, -1, -1, 1]},
+      {"name": "E1", "chars": [2, 1, -1, -2, 0, 0]},
+      {"name": "E2", "chars": [2, -1, -1, 2, 0, 0]}
+    ],
+    "basis": {
+      "A1": ["x²+y²", "z²"],
+      "A2": ["z", "Rz"],
+      "B1": [],
+      "B2": [],
+      "E1": ["(x,y)", "(Rx,Ry)", "(xz,yz)"],
+      "E2": ["(x²-y²,xy)"]
+    }
+  },
+
+  "D2h": {
+    "order": 8,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "C2(z)", "size": 1}, {"label": "C2(y)", "size": 1},
+      {"label": "C2(x)", "size": 1}, {"label": "i", "size": 1}, {"label": "σ(xy)", "size": 1},
+      {"label": "σ(xz)", "size": 1}, {"label": "σ(yz)", "size": 1}
+    ],
+    "irreps": [
+      {"name": "Ag", "chars": [1, 1, 1, 1, 1, 1, 1, 1]},
+      {"name": "B1g", "chars": [1, 1, -1, -1, 1, 1, -1, -1]},
+      {"name": "B2g", "chars": [1, -1, 1, -1, 1, -1, 1, -1]},
+      {"name": "B3g", "chars": [1, -1, -1, 1, 1, -1, -1, 1]},
+      {"name": "Au", "chars": [1, 1, 1, 1, -1, -1, -1, -1]},
+      {"name": "B1u", "chars": [1, 1, -1, -1, -1, -1, 1, 1]},
+      {"name": "B2u", "chars": [1, -1, 1, -1, -1, 1, -1, 1]},
+      {"name": "B3u", "chars": [1, -1, -1, 1, -1, 1, 1, -1]}
+    ],
+    "basis": {
+      "Ag": ["x²", "y²", "z²"],
+      "B1g": ["Rz", "xy"],
+      "B2g": ["Ry", "xz"],
+      "B3g": ["Rx", "yz"],
+      "Au": [],
+      "B1u": ["z"],
+      "B2u": ["y"],
+      "B3u": ["x"]
+    }
+  },
+
+  "D3h": {
+    "order": 12,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C3", "size": 2}, {"label": "3C2", "size": 3},
+      {"label": "σh", "size": 1}, {"label": "2S3", "size": 2}, {"label": "3σv", "size": 3}
+    ],
+    "irreps": [
+      {"name": "A1'", "chars": [1, 1, 1, 1, 1, 1]},
+      {"name": "A2'", "chars": [1, 1, -1, 1, 1, -1]},
+      {"name": "E'", "chars": [2, -1, 0, 2, -1, 0]},
+      {"name": "A1''", "chars": [1, 1, 1, -1, -1, -1]},
+      {"name": "A2''", "chars": [1, 1, -1, -1, -1, 1]},
+      {"name": "E''", "chars": [2, -1, 0, -2, 1, 0]}
+    ],
+    "basis": {
+      "A1'": ["x²+y²", "z²"],
+      "A2'": ["Rz"],
+      "E'": ["(x,y)", "(x²-y²,xy)"],
+      "A1''": [],
+      "A2''": ["z"],
+      "E''": ["(Rx,Ry)", "(xz,yz)"]
+    }
+  },
+
+  "D4h": {
+    "order": 16,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C4", "size": 2}, {"label": "C2", "size": 1},
+      {"label": "2C2'", "size": 2}, {"label": "2C2''", "size": 2}, {"label": "i", "size": 1},
+      {"label": "2S4", "size": 2}, {"label": "σh", "size": 1}, {"label": "2σv", "size": 2},
+      {"label": "2σd", "size": 2}
+    ],
+    "irreps": [
+      {"name": "A1g", "chars": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]},
+      {"name": "A2g", "chars": [1, 1, 1, -1, -1, 1, 1, 1, -1, -1]},
+      {"name": "B1g", "chars": [1, -1, 1, 1, -1, 1, -1, 1, 1, -1]},
+      {"name": "B2g", "chars": [1, -1, 1, -1, 1, 1, -1, 1, -1, 1]},
+      {"name": "Eg", "chars": [2, 0, -2, 0, 0, 2, 0, -2, 0, 0]},
+      {"name": "A1u", "chars": [1, 1, 1, 1, 1, -1, -1, -1, -1, -1]},
+      {"name": "A2u", "chars": [1, 1, 1, -1, -1, -1, -1, -1, 1, 1]},
+      {"name": "B1u", "chars": [1, -1, 1, 1, -1, -1, 1, -1, -1, 1]},
+      {"name": "B2u", "chars": [1, -1, 1, -1, 1, -1, 1, -1, 1, -1]},
+      {"name": "Eu", "chars": [2, 0, -2, 0, 0, -2, 0, 2, 0, 0]}
+    ],
+    "basis": {
+      "A1g": ["x²+y²", "z²"],
+      "A2g": ["Rz"],
+      "B1g": ["x²-y²"],
+      "B2g": ["xy"],
+      "Eg": ["(Rx,Ry)", "(xz,yz)"],
+      "A1u": [],
+      "A2u": ["z"],
+      "B1u": [],
+      "B2u": [],
+      "Eu": ["(x,y)"]
+    }
+  },
+
+  "D5h": {
+    "order": 20,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C5", "size": 2}, {"label": "2C5²", "size": 2},
+      {"label": "5C2", "size": 5}, {"label": "σh", "size": 1}, {"label": "2S5", "size": 2},
+      {"label": "2S5³", "size": 2}, {"label": "5σv", "size": 5}
+    ],
+    "irreps": [
+      {"name": "A1'", "chars": [1, 1, 1, 1, 1, 1, 1, 1]},
+      {"name": "A2'", "chars": [1, 1, 1, -1, 1, 1, 1, -1]},
+      {"name": "E1'", "chars": [2, 0.618034, -1.618034, 0, 2, 0.618034, -1.618034, 0]},
+      {"name": "E2'", "chars": [2, -1.618034, 0.618034, 0, 2, -1.618034, 0.618034, 0]},
+      {"name": "A1''", "chars": [1, 1, 1, 1, -1, -1, -1, -1]},
+      {"name": "A2''", "chars": [1, 1, 1, -1, -1, -1, -1, 1]},
+      {"name": "E1''", "chars": [2, 0.618034, -1.618034, 0, -2, -0.618034, 1.618034, 0]},
+      {"name": "E2''", "chars": [2, -1.618034, 0.618034, 0, -2, 1.618034, -0.618034, 0]}
+    ],
+    "basis": {
+      "A1'": ["x²+y²", "z²"],
+      "A2'": ["Rz"],
+      "E1'": ["(x,y)"],
+      "E2'": ["(x²-y²,xy)"],
+      "A1''": [],
+      "A2''": ["z"],
+      "E1''": ["(Rx,Ry)", "(xz,yz)"],
+      "E2''": []
+    }
+  },
+
+  "D6h": {
+    "order": 24,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C6", "size": 2}, {"label": "2C3", "size": 2},
+      {"label": "C2", "size": 1}, {"label": "3C2'", "size": 3}, {"label": "3C2''", "size": 3},
+      {"label": "i", "size": 1}, {"label": "2S3", "size": 2}, {"label": "2S6", "size": 2},
+      {"label": "σh", "size": 1}, {"label": "3σd", "size": 3}, {"label": "3σv", "size": 3}
+    ],
+    "irreps": [
+      {"name": "A1g", "chars": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]},
+      {"name": "A2g", "chars": [1, 1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1]},
+      {"name": "B1g", "chars": [1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1]},
+      {"name": "B2g", "chars": [1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1]},
+      {"name": "E1g", "chars": [2, 1, -1, -2, 0, 0, 2, 1, -1, -2, 0, 0]},
+      {"name": "E2g", "chars": [2, -1, -1, 2, 0, 0, 2, -1, -1, 2, 0, 0]},
+      {"name": "A1u", "chars": [1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1]},
+      {"name": "A2u", "chars": [1, 1, 1, 1, -1, -1, -1, -1, -1, -1, 1, 1]},
+      {"name": "B1u", "chars": [1, -1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1]},
+      {"name": "B2u", "chars": [1, -1, 1, -1, -1, 1, -1, 1, -1, 1, 1, -1]},
+      {"name": "E1u", "chars": [2, 1, -1, -2, 0, 0, -2, -1, 1, 2, 0, 0]},
+      {"name": "E2u", "chars": [2, -1, -1, 2, 0, 0, -2, 1, 1, -2, 0, 0]}
+    ],
+    "basis": {
+      "A1g": ["x²+y²", "z²"],
+      "A2g": ["Rz"],
+      "B1g": [],
+      "B2g": [],
+      "E1g": ["(Rx,Ry)", "(xz,yz)"],
+      "E2g": ["(x²-y²,xy)"],
+      "A1u": [],
+      "A2u": ["z"],
+      "B1u": [],
+      "B2u": [],
+      "E1u": ["(x,y)"],
+      "E2u": []
+    }
+  },
+
+  "D2d": {
+    "order": 8,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2S4", "size": 2}, {"label": "C2", "size": 1},
+      {"label": "2C2'", "size": 2}, {"label": "2σd", "size": 2}
+    ],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, 1, -1, -1]},
+      {"name": "B1", "chars": [1, -1, 1, 1, -1]},
+      {"name": "B2", "chars": [1, -1, 1, -1, 1]},
+      {"name": "E", "chars": [2, 0, -2, 0, 0]}
+    ],
+    "basis": {
+      "A1": ["x²+y²", "z²"],
+      "A2": ["Rz"],
+      "B1": ["x²-y²"],
+      "B2": ["z", "xy"],
+      "E": ["(x,y)", "(Rx,Ry)", "(xz,yz)"]
+    }
+  },
+
+  "D3d": {
+    "order": 12,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C3", "size": 2}, {"label": "3C2", "size": 3},
+      {"label": "i", "size": 1}, {"label": "2S6", "size": 2}, {"label": "3σd", "size": 3}
+    ],
+    "irreps": [
+      {"name": "A1g", "chars": [1, 1, 1, 1, 1, 1]},
+      {"name": "A2g", "chars": [1, 1, -1, 1, 1, -1]},
+      {"name": "Eg", "chars": [2, -1, 0, 2, -1, 0]},
+      {"name": "A1u", "chars": [1, 1, 1, -1, -1, -1]},
+      {"name": "A2u", "chars": [1, 1, -1, -1, -1, 1]},
+      {"name": "Eu", "chars": [2, -1, 0, -2, 1, 0]}
+    ],
+    "basis": {
+      "A1g": ["x²+y²", "z²"],
+      "A2g": ["Rz"],
+      "Eg": ["(Rx,Ry)", "(xz,yz)", "(x²-y²,xy)"],
+      "A1u": [],
+      "A2u": ["z"],
+      "Eu": ["(x,y)"]
+    }
+  },
+
+  "D4d": {
+    "order": 16,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2S8", "size": 2}, {"label": "2C4", "size": 2},
+      {"label": "2S8³", "size": 2}, {"label": "C2", "size": 1}, {"label": "4C2'", "size": 4},
+      {"label": "4σd", "size": 4}
+    ],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1, 1, 1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, 1, 1, 1, -1, -1]},
+      {"name": "B1", "chars": [1, -1, 1, -1, 1, 1, -1]},
+      {"name": "B2", "chars": [1, -1, 1, -1, 1, -1, 1]},
+      {"name": "E1", "chars": [2, 1.414214, 0, -1.414214, -2, 0, 0]},
+      {"name": "E2", "chars": [2, 0, -2, 0, 2, 0, 0]},
+      {"name": "E3", "chars": [2, -1.414214, 0, 1.414214, -2, 0, 0]}
+    ],
+    "basis": {
+      "A1": ["x²+y²", "z²"],
+      "A2": ["Rz"],
+      "B1": [],
+      "B2": ["z"],
+      "E1": ["(x,y)"],
+      "E2": ["(x²-y²,xy)"],
+      "E3": ["(Rx,Ry)", "(xz,yz)"]
+    }
+  },
+
+  "D5d": {
+    "order": 20,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C5", "size": 2}, {"label": "2C5²", "size": 2},
+      {"label": "5C2", "size": 5}, {"label": "i", "size": 1}, {"label": "2S10³", "size": 2},
+      {"label": "2S10", "size": 2}, {"label": "5σd", "size": 5}
+    ],
+    "irreps": [
+      {"name": "A1g", "chars": [1, 1, 1, 1, 1, 1, 1, 1]},
+      {"name": "A2g", "chars": [1, 1, 1, -1, 1, 1, 1, -1]},
+      {"name": "E1g", "chars": [2, 0.618034, -1.618034, 0, 2, 0.618034, -1.618034, 0]},
+      {"name": "E2g", "chars": [2, -1.618034, 0.618034, 0, 2, -1.618034, 0.618034, 0]},
+      {"name": "A1u", "chars": [1, 1, 1, 1, -1, -1, -1, -1]},
+      {"name": "A2u", "chars": [1, 1, 1, -1, -1, -1, -1, 1]},
+      {"name": "E1u", "chars": [2, 0.618034, -1.618034, 0, -2, -0.618034, 1.618034, 0]},
+      {"name": "E2u", "chars": [2, -1.618034, 0.618034, 0, -2, 1.618034, -0.618034, 0]}
+    ],
+    "basis": {
+      "A1g": ["x²+y²", "z²"],
+      "A2g": ["Rz"],
+      "E1g": ["(Rx,Ry)", "(xz,yz)"],
+      "E2g": ["(x²-y²,xy)"],
+      "A1u": [],
+      "A2u": ["z"],
+      "E1u": ["(x,y)"],
+      "E2u": []
+    }
+  },
+
+  "S4": {
+    "order": 4,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "S4", "size": 1},
+      {"label": "C2", "size": 1}, {"label": "S4³", "size": 1}
+    ],
+    "irreps": [
+      {"name": "A", "chars": [1, 1, 1, 1]},
+      {"name": "B", "chars": [1, -1, 1, -1]},
+      {"name": "E", "chars": [2, 0, -2, 0], "merged": true}
+    ],
+    "basis": {
+      "A": ["Rz", "x²+y²", "z²"],
+      "B": ["z", "x²-y²", "xy"],
+      "E": ["(x,y)", "(Rx,Ry)", "(xz,yz)"]
+    }
+  },
+
+  "S6": {
+    "order": 6,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "C3", "size": 1}, {"label": "C3²", "size": 1},
+      {"label": "i", "size": 1}, {"label": "S6", "size": 1}, {"label": "S6⁵", "size": 1}
+    ],
+    "irreps": [
+      {"name": "Ag", "chars": [1, 1, 1, 1, 1, 1]},
+      {"name": "Eg", "chars": [2, -1, -1, 2, -1, -1], "merged": true},
+      {"name": "Au", "chars": [1, 1, 1, -1, -1, -1]},
+      {"name": "Eu", "chars": [2, -1, -1, -2, 1, 1], "merged": true}
+    ],
+    "basis": {
+      "Ag": ["Rz", "x²+y²", "z²"],
+      "Eg": ["(Rx,Ry)", "(xz,yz)", "(x²-y²,xy)"],
+      "Au": ["z"],
+      "Eu": ["(x,y)"]
+    }
+  },
+
+  "S8": {
+    "order": 8,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "S8", "size": 1}, {"label": "C4", "size": 1},
+      {"label": "S8³", "size": 1}, {"label": "C2", "size": 1}, {"label": "S8⁵", "size": 1},
+      {"label": "C4³", "size": 1}, {"label": "S8⁷", "size": 1}
+    ],
+    "irreps": [
+      {"name": "A", "chars": [1, 1, 1, 1, 1, 1, 1, 1]},
+      {"name": "B", "chars": [1, -1, 1, -1, 1, -1, 1, -1]},
+      {"name": "E1", "chars": [2, 1.414214, 0, -1.414214, -2, -1.414214, 0, 1.414214], "merged": true},
+      {"name": "E2", "chars": [2, 0, -2, 0, 2, 0, -2, 0], "merged": true},
+      {"name": "E3", "chars": [2, -1.414214, 0, 1.414214, -2, 1.414214, 0, -1.414214], "merged": true}
+    ],
+    "basis": {
+      "A": ["Rz", "x²+y²", "z²"],
+      "B": ["z"],
+      "E1": ["(x,y)"],
+      "E2": ["(x²-y²,xy)"],
+      "E3": ["(Rx,Ry)", "(xz,yz)"]
+    }
+  },
+
+  "T": {
+    "order": 12,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "4C3", "size": 4},
+      {"label": "4C3²", "size": 4}, {"label": "3C2", "size": 3}
+    ],
+    "irreps": [
+      {"name": "A", "chars": [1, 1, 1, 1]},
+      {"name": "E", "chars": [2, -1, -1, 2], "merged": true},
+      {"name": "T", "chars": [3, 0, 0, -1]}
+    ],
+    "basis": {
+      "A": ["x²+y²+z²"],
+      "E": ["(2z²-x²-y², x²-y²)"],
+      "T": ["(x,y,z)", "(Rx,Ry,Rz)", "(xy,xz,yz)"]
+    }
+  },
+
+  "Td": {
+    "order": 24,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "8C3", "size": 8}, {"label": "3C2", "size": 3},
+      {"label": "6S4", "size": 6}, {"label": "6σd", "size": 6}
+    ],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, 1, -1, -1]},
+      {"name": "E", "chars": [2, -1, 2, 0, 0]},
+      {"name": "T1", "chars": [3, 0, -1, 1, -1]},
+      {"name": "T2", "chars": [3, 0, -1, -1, 1]}
+    ],
+    "basis": {
+      "A1": ["x²+y²+z²"],
+      "A2": [],
+      "E": ["(2z²-x²-y²)", "(x²-y²)"],
+      "T1": ["(Rx,Ry,Rz)"],
+      "T2": ["(x,y,z)", "(xy,xz,yz)"]
+    }
+  },
+
+  "Th": {
+    "order": 24,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "4C3", "size": 4}, {"label": "4C3²", "size": 4},
+      {"label": "3C2", "size": 3}, {"label": "i", "size": 1}, {"label": "4S6", "size": 4},
+      {"label": "4S6⁵", "size": 4}, {"label": "3σh", "size": 3}
+    ],
+    "irreps": [
+      {"name": "Ag", "chars": [1, 1, 1, 1, 1, 1, 1, 1]},
+      {"name": "Eg", "chars": [2, -1, -1, 2, 2, -1, -1, 2], "merged": true},
+      {"name": "Tg", "chars": [3, 0, 0, -1, 3, 0, 0, -1]},
+      {"name": "Au", "chars": [1, 1, 1, 1, -1, -1, -1, -1]},
+      {"name": "Eu", "chars": [2, -1, -1, 2, -2, 1, 1, -2], "merged": true},
+      {"name": "Tu", "chars": [3, 0, 0, -1, -3, 0, 0, 1]}
+    ],
+    "basis": {
+      "Ag": ["x²+y²+z²"],
+      "Eg": ["(2z²-x²-y², x²-y²)"],
+      "Tg": ["(Rx,Ry,Rz)", "(xy,xz,yz)"],
+      "Au": [],
+      "Eu": [],
+      "Tu": ["(x,y,z)"]
+    }
+  },
+
+  "O": {
+    "order": 24,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "8C3", "size": 8}, {"label": "3C2", "size": 3},
+      {"label": "6C2", "size": 6}, {"label": "6C4", "size": 6}
+    ],
+    "irreps": [
+      {"name": "A1", "chars": [1, 1, 1, 1, 1]},
+      {"name": "A2", "chars": [1, 1, 1, -1, -1]},
+      {"name": "E", "chars": [2, -1, 2, 0, 0]},
+      {"name": "T1", "chars": [3, 0, -1, -1, 1]},
+      {"name": "T2", "chars": [3, 0, -1, 1, -1]}
+    ],
+    "basis": {
+      "A1": ["x²+y²+z²"],
+      "A2": [],
+      "E": ["(2z²-x²-y²)", "(x²-y²)"],
+      "T1": ["(x,y,z)", "(Rx,Ry,Rz)"],
+      "T2": ["(xy,xz,yz)"]
+    }
+  },
+
+  "Oh": {
+    "order": 48,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "8C3", "size": 8}, {"label": "3C2", "size": 3},
+      {"label": "6C4", "size": 6}, {"label": "6C2", "size": 6}, {"label": "i", "size": 1},
+      {"label": "8S6", "size": 8}, {"label": "6S4", "size": 6}, {"label": "3σh", "size": 3},
+      {"label": "6σd", "size": 6}
+    ],
+    "irreps": [
+      {"name": "A1g", "chars": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]},
+      {"name": "A2g", "chars": [1, 1, 1, -1, -1, 1, 1, -1, 1, -1]},
+      {"name": "Eg", "chars": [2, -1, 2, 0, 0, 2, -1, 0, 2, 0]},
+      {"name": "T1g", "chars": [3, 0, -1, 1, -1, 3, 0, 1, -1, -1]},
+      {"name": "T2g", "chars": [3, 0, -1, -1, 1, 3, 0, -1, -1, 1]},
+      {"name": "A1u", "chars": [1, 1, 1, 1, 1, -1, -1, -1, -1, -1]},
+      {"name": "A2u", "chars": [1, 1, 1, -1, -1, -1, -1, 1, -1, 1]},
+      {"name": "Eu", "chars": [2, -1, 2, 0, 0, -2, 1, 0, -2, 0]},
+      {"name": "T1u", "chars": [3, 0, -1, 1, -1, -3, 0, -1, 1, 1]},
+      {"name": "T2u", "chars": [3, 0, -1, -1, 1, -3, 0, 1, 1, -1]}
+    ],
+    "basis": {
+      "A1g": ["x²+y²+z²"],
+      "A2g": [],
+      "Eg": ["(2z²-x²-y²)", "(x²-y²)"],
+      "T1g": ["(Rx,Ry,Rz)"],
+      "T2g": ["(xy,xz,yz)"],
+      "A1u": [],
+      "A2u": ["xyz"],
+      "Eu": [],
+      "T1u": ["(x,y,z)"],
+      "T2u": []
+    }
+  },
+
+  "I": {
+    "order": 60,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "12C5", "size": 12}, {"label": "12C5²", "size": 12},
+      {"label": "20C3", "size": 20}, {"label": "15C2", "size": 15}
+    ],
+    "irreps": [
+      {"name": "A", "chars": [1, 1, 1, 1, 1]},
+      {"name": "T1", "chars": [3, 1.618034, -0.618034, 0, -1]},
+      {"name": "T2", "chars": [3, -0.618034, 1.618034, 0, -1]},
+      {"name": "G", "chars": [4, -1, -1, 1, 0]},
+      {"name": "H", "chars": [5, 0, 0, -1, 1]}
+    ],
+    "basis": {
+      "A": ["x²+y²+z²"],
+      "T1": ["(x,y,z)", "(Rx,Ry,Rz)"],
+      "T2": [],
+      "G": [],
+      "H": ["(2z²-x²-y², x²-y², xy, xz, yz)"]
+    }
+  },
+
+  "Ih": {
+    "order": 120,
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "12C5", "size": 12}, {"label": "12C5²", "size": 12},
+      {"label": "20C3", "size": 20}, {"label": "15C2", "size": 15}, {"label": "i", "size": 1},
+      {"label": "12S10", "size": 12}, {"label": "12S10³", "size": 12}, {"label": "20S6", "size": 20},
+      {"label": "15σ", "size": 15}
+    ],
+    "irreps": [
+      {"name": "Ag", "chars": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]},
+      {"name": "T1g", "chars": [3, 1.618034, -0.618034, 0, -1, 3, -0.618034, 1.618034, 0, -1]},
+      {"name": "T2g", "chars": [3, -0.618034, 1.618034, 0, -1, 3, 1.618034, -0.618034, 0, -1]},
+      {"name": "Gg", "chars": [4, -1, -1, 1, 0, 4, -1, -1, 1, 0]},
+      {"name": "Hg", "chars": [5, 0, 0, -1, 1, 5, 0, 0, -1, 1]},
+      {"name": "Au", "chars": [1, 1, 1, 1, 1, -1, -1, -1, -1, -1]},
+      {"name": "T1u", "chars": [3, 1.618034, -0.618034, 0, -1, -3, 0.618034, -1.618034, 0, 1]},
+      {"name": "T2u", "chars": [3, -0.618034, 1.618034, 0, -1, -3, -1.618034, 0.618034, 0, 1]},
+      {"name": "Gu", "chars": [4, -1, -1, 1, 0, -4, 1, 1, -1, 0]},
+      {"name": "Hu", "chars": [5, 0, 0, -1, 1, -5, 0, 0, 1, -1]}
+    ],
+    "basis": {
+      "Ag": ["x²+y²+z²"],
+      "T1g": ["(Rx,Ry,Rz)"],
+      "T2g": [],
+      "Gg": [],
+      "Hg": ["(2z²-x²-y², x²-y², xy, xz, yz)"],
+      "Au": [],
+      "T1u": ["(x,y,z)"],
+      "T2u": [],
+      "Gu": [],
+      "Hu": []
+    }
+  },
+
+  "C∞v": {
+    "order": "∞",
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C_φ", "size": "∞"}, {"label": "∞σv", "size": "∞"}
+    ],
+    "irreps": [
+      {"name": "A1(Σ⁺)", "chars": [1, 1, 1]},
+      {"name": "A2(Σ⁻)", "chars": [1, 1, -1]},
+      {"name": "E1(Π)", "chars": [2, "2cos(φ)", 0]},
+      {"name": "E2(Δ)", "chars": [2, "2cos(2φ)", 0]},
+      {"name": "E3(Φ)", "chars": [2, "2cos(3φ)", 0]}
+    ],
+    "basis": {
+      "A1(Σ⁺)": ["z", "x²+y²", "z²"],
+      "A2(Σ⁻)": ["Rz"],
+      "E1(Π)": ["(x,y)", "(Rx,Ry)", "(xz,yz)"],
+      "E2(Δ)": ["(x²-y²,xy)"],
+      "E3(Φ)": []
+    },
+    "infinite": true,
+    "note": "简化表：2C_φ 表示任意转角 φ 的转动（φ≠0）；∞σv 表示含主轴的无穷多个镜面。"
+  },
+
+  "D∞h": {
+    "order": "∞",
+    "classes": [
+      {"label": "E", "size": 1}, {"label": "2C_φ", "size": "∞"}, {"label": "∞σv", "size": "∞"},
+      {"label": "i", "size": 1}, {"label": "2S_φ", "size": "∞"}, {"label": "2C2", "size": "∞"}
+    ],
+    "irreps": [
+      {"name": "Σg⁺", "chars": [1, 1, 1, 1, 1, 1]},
+      {"name": "Σg⁻", "chars": [1, 1, -1, 1, 1, -1]},
+      {"name": "Σu⁺", "chars": [1, 1, 1, -1, -1, -1]},
+      {"name": "Σu⁻", "chars": [1, 1, -1, -1, -1, 1]},
+      {"name": "Πg", "chars": [2, "2cos(φ)", 0, 2, "-2cos(φ)", 0]},
+      {"name": "Πu", "chars": [2, "2cos(φ)", 0, -2, "2cos(φ)", 0]},
+      {"name": "Δg", "chars": [2, "2cos(2φ)", 0, 2, "2cos(2φ)", 0]},
+      {"name": "Δu", "chars": [2, "2cos(2φ)", 0, -2, "-2cos(2φ)", 0]}
+    ],
+    "basis": {
+      "Σg⁺": ["x²+y²", "z²"],
+      "Σg⁻": ["Rz"],
+      "Σu⁺": ["z"],
+      "Σu⁻": [],
+      "Πg": ["(Rx,Ry)", "(xz,yz)"],
+      "Πu": ["(x,y)"],
+      "Δg": ["(x²-y²,xy)"],
+      "Δu": []
+    },
+    "infinite": true,
+    "note": "简化表；字符与 CO2/C2H2 的 3N 分解自校验通过（见 symmetry.py 自测）。"
+  }
+}

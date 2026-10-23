@@ -1,0 +1,65 @@
+# dsh-structchem bundle patch —— 结构化学答题工具层 + 方法论 skill。
+#
+# 本层只贡献配置，不含 JS 代码，做两件事：
+#
+#   1) 把随包的 skills/ 目录注册成**独立的技能扫描源**：providerName 唯一、
+#      includeDefaultRoots: false。这样它只扫描本包的 skills/，既不和用户
+#      自己的 skills 冲突，也不会把别的目录重复扫一遍。
+#   2) 把 src/ 里的 stdio MCP 服务挂进 DSH 的 MCP 客户端，模型侧于是出现
+#      mcp__structchem__sc_* 这批工具。
+#
+# 包内路径都不写死：两处都用 createRequire 从 baseUrl（本 patch 所在层）
+# 反解这个包自己的安装位置，所以装到任何机器、任何 profile 都不用改。
+#
+# 可覆盖的环境变量：
+#   STRUCTCHEM_PYTHON  Python 可执行文件（默认 'python'，需 3.10+）
+#
+# 前置条件：Python 3.10+ 且装齐 numpy / mcp(1.x)。纯本地计算，不需要网络。
+# 改完必须重启 DSH —— MCP 进程在启动时拉起，dsh-mcp-client 没有热重载。
+
+- insert:
+    - !!js >-
+        (() => {
+          const P = process.getBuiltinModule('node:path');
+          const M = process.getBuiltinModule('node:module');
+          const R = M.createRequire(baseUrl + 'package.json');
+          let root;
+          try { root = P.dirname(R.resolve('dsh-structchem/package.json')); }
+          catch (err) { root = P.dirname(R.resolve('./package.json')); }
+          return {
+            id: 'skill-filesystem-structchem',
+            name: '@deepseek-ai/dsh-skill-filesystem',
+            config: {
+              providerName: 'structchem',
+              includeDefaultRoots: false,
+              customSkillDirs: [P.join(root, 'skills')]
+            }
+          };
+        })()
+
+- insert:
+    - !!js >-
+        (() => {
+          const P = process.getBuiltinModule('node:path');
+          const M = process.getBuiltinModule('node:module');
+          const R = M.createRequire(baseUrl + 'package.json');
+          let root;
+          try { root = P.dirname(R.resolve('dsh-structchem/package.json')); }
+          catch (err) { root = P.dirname(R.resolve('./package.json')); }
+          return {
+            id: 'mcp-structchem',
+            name: '@deepseek-ai/dsh-mcp-client',
+            config: {
+              serverName: 'structchem',
+              transport: 'stdio',
+              command: process.env.STRUCTCHEM_PYTHON ?? 'python',
+              args: ['-m', 'structchem_mcp.server'],
+              env: {
+                PYTHONPATH: P.join(root, 'src'),
+                PYTHONIOENCODING: 'utf-8'
+              },
+              cwd: root,
+              toolCallTimeoutMs: 60000
+            }
+          };
+        })()

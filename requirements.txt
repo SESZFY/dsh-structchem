@@ -1,0 +1,5 @@
+# dsh-structchem 运行依赖
+#
+# 只做本地确定性计算，无网络、无 API key。
+mcp>=1.0,<2.0
+numpy>=1.24

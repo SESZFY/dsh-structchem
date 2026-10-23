@@ -1,0 +1,33 @@
+display-name-zh: 结构化学答题
+version: 1.0.0
+tag-en: Chemistry
+tag-cn: 化学
+complete-tags-en:
+  - Chemistry / Structural Chemistry
+  - Education / Exam Answering
+complete-tags-cn:
+  - 化学 / 结构化学
+  - 教育 / 应试作答
+summary-en: Answer structural chemistry exercises in the Zhou Gongdu textbook / Nankai exam style — point group, MO, crystal cell and ligand-field results come from the dsh-structchem plugin, and every answer is written as a symbol, a number with unit, or a graph, plus at most one line of criterion.
+summary-cn: 按周公度《结构化学基础》体系与南开真题口径答结构化学题——点群、分子轨道、晶胞、配位场一律由 dsh-structchem 插件算准，答案写成"符号 / 带单位的数 / 一张图 + 一句判据"。
+desc-en: >-
+  Distilled from a Nankai University structural chemistry final paper with its answer key
+  (2002 grade, 5 pages), the accompanying model-practice answer book (8 pages, 30 molecule
+  entries, 4 packing types, 6 ionic structure types) and the textbook exercise sets of
+  chapters 1-3. Encodes the measured answer style of this course: the point-group table cell
+  is 2-3 characters, a numerical answer keeps 3 significant figures with its unit, a drawing
+  instruction is worth full marks and may never be answered "omitted", and the longest
+  explanatory sentence in the answer key is 22 characters. Covers eighteen question types:
+  Schroedinger equation writing, box levels, hydrogenic quantum numbers, Slater screening,
+  spectroscopic terms, superposition, point groups, character tables, normal-mode decomposition,
+  dipoles and chirality, HMO, aromaticity, diatomic MO, VSEPR, crystal systems, Miller indices,
+  packing and voids, ligand field.
+desc-cn: >-
+  从南开大学结构化学期末试卷及其答案（5 页）、配套模型实习答案（8 页：30 个分子点群条目、
+  4 类金属堆积、6 类离子晶体全表）与教材第 1–3 章习题集反推的答题方法：18 类题型骨架、
+  26 个工具调用点、33 条结构化学特有陷阱。风格基准全部来自实测——点群表格单元格只有 2–3 个
+  字符，数值答案 3 位有效数字带单位，画图题写"略"等于零分，答案卷里最长的解释句是 22 字。
+  配套 dsh-structchem 插件提供点群判定、特征标表、约化、3N 分解、HMO、晶胞与配位场的确定性计算。
+source: local-derived
+source-original: 南开大学化学学院《结构化学》试卷(A)及答案（2002 级，2004-07-08）；南开大学《结构化学·模型实习答案》；周公度、段连运《结构化学基础》（第 5 版）第 1–3 章习题
+companion-plugin: dsh-structchem (MCP server, tools mcp__structchem__sc_*)

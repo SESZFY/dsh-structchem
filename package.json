@@ -1,0 +1,44 @@
+{
+  "name": "dsh-structchem",
+  "version": "1.0.0",
+  "description": "结构化学答题工具层 + 方法论 skill：点群判定 / 特征标表 / 约化表示 / 3N-6 振动分解 / 势箱与类氢原子 / Slater 规则 / 光谱项 / Hückel 分子轨道 / 晶体几何与堆积 / 晶体场 CFSE 与磁矩。纯本地 numpy，零网络。DSH profile bundle。",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "dsh-bundle",
+    "skills",
+    "chemistry",
+    "structural-chemistry",
+    "group-theory",
+    "point-group",
+    "crystal-structure",
+    "mcp",
+    "结构化学",
+    "分子对称性"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "engines": {
+      "dsh": ">=0.1.5"
+    }
+  },
+  "files": [
+    "cordis.patch.yml",
+    "skills/",
+    "src/",
+    "tests/",
+    "tools/",
+    "requirements.txt",
+    "ARCHITECTURE.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SESZFY/dsh-structchem.git"
+  },
+  "homepage": "https://github.com/SESZFY/dsh-structchem",
+  "bugs": "https://github.com/SESZFY/dsh-structchem/issues"
+}

@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# 运行期产出（结构图、临时渲染）
+/out/
+/_fig-out/
+
+# 原始语料：教材扫描件、题库 PDF、OCR 中间产物，不随包发行
+/research/
+/_structchem_work/
+*.raw.txt
+
+.DS_Store
+Thumbs.db
+node_modules/
